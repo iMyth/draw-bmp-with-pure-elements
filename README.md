@@ -1,3 +1,7 @@
+# Just for fun
+
+### Grab bmp file and draw them with pure html elements.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

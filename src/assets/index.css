@@ -1,0 +1,19 @@
+html, body, div, span {
+  line-height: 1px;
+  vertical-align: top;
+  text-align: center;
+}
+
+.pixel-line {
+  height: 1px;
+}
+
+.pixel-line span {
+  height: 1px;
+  width: 1px;
+  display: inline-block;
+}
+
+.img-container {
+  margin-top: 20px;
+}
