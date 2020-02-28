@@ -1,10 +1,12 @@
-interface Blob {
-  readonly size: number
-  readonly type: string
-  arrayBuffer(): Promise<ArrayBuffer>
-  slice(start?: number, end?: number, contentType?: string): Blob
-  stream(): ReadableStream<Uint8Array>
-  text(): Promise<string>
+declare global {
+  interface Blob {
+    readonly size: number
+    readonly type: string
+    arrayBuffer(): Promise<ArrayBuffer>
+    slice(start?: number, end?: number, contentType?: string): Blob
+    stream(): ReadableStream<Uint8Array>
+    text(): Promise<string>
+  }
 }
 
 const testUrl: string = 'test.bmp'
@@ -16,7 +18,7 @@ export const grabBmp = (url: string = testUrl) => {
   return fetch(url).then(response => {
     return response.blob()
   }).then((blob) => {
-    return (blob as Blob).stream().getReader().read()
+    return blob.stream().getReader().read()
   })
 }
 
@@ -34,13 +36,26 @@ export const convertUint8ArrayToRGBColorTable = <T extends {
   return result
 }
 
-export const getImgWidth = (bmpData: Uint8Array): number => {
-  const widthArray = bmpData.slice(18, 21)
-  return widthArray[0] | (widthArray[1] << 8) | (widthArray[2] << 16) | (widthArray[3] << 24)
+export const combineNumbersFromUint8Array = (array: Uint8Array): number => {
+  let result = 0
+  array.forEach((item, index) => {
+    result |= item << (index << 3)
+  })
+  return result
 }
 
+const IMG_WIDTH_INFO_START = 18
+const IMG_WIDTH_INFO_END = 22
+
+export const getImgWidth = (bmpData: Uint8Array): number => {
+  return combineNumbersFromUint8Array(bmpData.slice(IMG_WIDTH_INFO_START, IMG_WIDTH_INFO_END))
+}
+
+const IMG_HEADER_SIZE_START = 14
+const IMG_HEADER_SIZE_END = 18
+
 export const getColorTableFromBMPBlob = (bmpData: Uint8Array) => {
-  const headerSize = (bmpData[14] & 0xff) | ((bmpData[15] & 0xff) << 8) | ((bmpData[16] & 0xff) << 16) | ((bmpData[17] & 0xff) << 24)
+  const headerSize = combineNumbersFromUint8Array(bmpData.slice(IMG_HEADER_SIZE_START, IMG_HEADER_SIZE_END))
   const width = getImgWidth(bmpData)
   return convertUint8ArrayToRGBColorTable(convertUint8ArrayToRGBColorTable(bmpData.slice(14 + headerSize), 3), width)
 }
