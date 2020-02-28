@@ -23,7 +23,7 @@ export const grabBmp = (url: string = testUrl) => {
 export const convertUint8ArrayToRGBColorTable = <T extends {
   length: number,
   slice: (index: number, end?: number) => T
-}>(array: T, length: number): T[] => {
+}> (array: T, length: number): T[] => {
   if (length === 0) {
     throw new Error('Unexpected length')
   }
@@ -34,9 +34,13 @@ export const convertUint8ArrayToRGBColorTable = <T extends {
   return result
 }
 
+export const getImgWidth = (bmpData: Uint8Array): number => {
+  const widthArray = bmpData.slice(18, 21)
+  return widthArray[0] | (widthArray[1] << 8) | (widthArray[2] << 16) | (widthArray[3] << 24)
+}
+
 export const getColorTableFromBMPBlob = (bmpData: Uint8Array) => {
   const headerSize = (bmpData[14] & 0xff) | ((bmpData[15] & 0xff) << 8) | ((bmpData[16] & 0xff) << 16) | ((bmpData[17] & 0xff) << 24)
-  const widthArray = bmpData.slice(15, 19)
-  const width = widthArray[3] | (widthArray[2] << 8) | (widthArray[1] << 16) | (widthArray[0] << 24)
+  const width = getImgWidth(bmpData)
   return convertUint8ArrayToRGBColorTable(convertUint8ArrayToRGBColorTable(bmpData.slice(14 + headerSize), 3), width)
 }
